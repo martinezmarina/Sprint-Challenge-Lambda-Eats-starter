@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Route, Link, Switch } from 'react-router-dom'
-import PizzaBuild from './PizzaBuild'
-import Order from './Order'
-import PizzaSchema from './PizzaSchema'
+import PizzaBuild from './Components/PizzaBuild'
+import PizzaSchema from './Components/PizzaSchema'
 import * as yup from 'yup';
 
 const initialFormValues = {
@@ -43,23 +42,23 @@ const App = () => {
 
 
   const onInputChange = evt => {
-    const name = evt.target.name
-    const value = evt.target.value
-   yup
-   .reach(PizzaSchema, name)
-   .validate(evt.target.value)
-   .then(valid => {
-     setFormErrors({
-       ...formErrors,
-       [name]: ""
-     })
-   })
-   .catch(err => {
-     setFormErrors({
-       ...formErrors,
-      [name]:err.errors[0]
-     })
-   })
+    const { name } = evt.target
+    const { value } = evt.target
+    yup
+      .reach(PizzaSchema, name)
+      .validate(evt.target.value)
+      .then(valid => {
+        setFormErrors({
+          ...formErrors,
+          [name]: ""
+        })
+      })
+      .catch(err => {
+        setFormErrors({
+          ...formErrors,
+          [name]: err.errors[0]
+        })
+      })
 
     setFormValues({
       ...formValues,
@@ -80,20 +79,22 @@ const App = () => {
   const onSubmit = evt => {
     evt.preventDefault()
     const newPizza = {
+      name: formValues.name,
       pizza_size: formValues.pizza_size,
       sauce: formValues.sauce,
       toppings: Object.keys(formValues.toppings)
         .filter(igdt => formValues.toppings[igdt] === true),
-      special_instructions: formValues.instructions
+      special_instructions: formValues.special_instructions
     }
+
     setPizza(newPizza)
-    setFormValues(initialFormValues) 
+    setFormValues(initialFormValues)
   }
-    useEffect(() => {
+  useEffect(() => {
     PizzaSchema.isValid(formValues)
-    .then(valid => {
-      setDisabled(!valid)
-    })
+      .then(valid => {
+        setDisabled(!valid)
+      })
   }, [formValues])
   return (
     <div>
@@ -101,10 +102,10 @@ const App = () => {
         <nav>
           <h1>Lambda Eats</h1>
           <Link to='/'>Home</Link>
-          <Link to='/view_order'>View Order</Link>
+          <Link className='buildPizza' to='/pizza_builder'>Build Your Pizza</Link>
         </nav>
       </header>
-      <Link to='/pizza_builder'>Build Your Pizza</Link>
+
       <Switch>
         <Route path='/pizza_builder'>
           <PizzaBuild
@@ -116,13 +117,15 @@ const App = () => {
             errors={formErrors}
           />
         </Route>
-        <Route to='/view_order'>
-          <Order/>
-        </Route>
-        <Route path='/'>
-          <App/>
-        </Route>
       </Switch>
+      <div className="yourOrder">
+        <h2>Your Order</h2>
+        <p>Order Name: {pizza.name}</p>
+        <p>Pizza Size: {pizza.pizza_size}</p>
+        <p>Sauce: {pizza.sauce}</p>
+        <p>Toppings: {pizza.toppings}</p>
+        <p>Instructions: {pizza.special_instructions}</p>
+      </div>
     </div>
   );
 };
